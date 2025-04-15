@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: arraytotable
+Version: 0.0.1
+Summary: Convert an array to latex table
+Author: <NAME>
+Requires-Dist: numpy
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: summary

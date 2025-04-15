@@ -1,0 +1,10 @@
+README.txt
+pyproject.toml
+setup.py
+arraytotable.egg-info/PKG-INFO
+arraytotable.egg-info/SOURCES.txt
+arraytotable.egg-info/dependency_links.txt
+arraytotable.egg-info/requires.txt
+arraytotable.egg-info/top_level.txt
+np_array_to_latex_table/Array_to_latex.py
+np_array_to_latex_table/__init__.py
