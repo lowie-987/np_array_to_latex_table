@@ -345,7 +345,7 @@ class LatexTable:
                     print(f"{val:.{self.precision}e}", end="")
 
                 elif self.round:
-                    print(f"{round(val, self.precision)}")
+                    print(f"{round(val, self.precision)}", end="")
                 else:
                     print(f"{val}", end="")
 
