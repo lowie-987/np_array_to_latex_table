@@ -254,7 +254,7 @@ class LatexTable:
     def set_row_color(self, idx:int, color:str|None):
         self.__row_colors[idx] = color
 
-    def __get_row_color(self, row:int, column:int) -> str|None:
+    def __get_cell_color(self, row:int, column:int) -> str|None:
         assert 0 <= row < self.array.shape[0], "row index invalid"
         assert 0 <= column < self.array.shape[1], "column index invalid"
 
@@ -325,6 +325,9 @@ class LatexTable:
         for i in range(self.array.shape[0]):
             print("\t\t", end="")
             if rowlabels is not None:
+                if self.__row_colors[i] is not None:
+                    print(r"\cellcolor{"+self.__row_colors[i]+r"}", end="")
+
                 if self.bold_row_labels:
                     print(r"\textbf{", end="")
 
@@ -336,8 +339,8 @@ class LatexTable:
                 print(" & ", end="")
 
             for j, val in enumerate(self.array[i,:]):
-                if self.__get_row_color(i, j) is not None:
-                    print(r"\cellcolor{"+self.__get_row_color(i, j)+r"}", end="")
+                if self.__get_cell_color(i, j) is not None:
+                    print(r"\cellcolor{"+self.__get_cell_color(i, j)+r"}", end="")
 
                 print(r"\SI{", end="")
 
