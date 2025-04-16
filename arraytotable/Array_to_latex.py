@@ -9,14 +9,59 @@ class LatexTable:
     __data_align: str
     __label_align: str
 
+    __vline: bool
+    __hline_top:bool
+    __hline_bottom:bool
+    __hline_header:bool
+    __hline_rows:bool
+
+    __bold_column_labels:bool
+    __bold_row_labels:bool
+
     __row_labels = list[str] | None
     __column_labels = list[str] | None
 
-    def __init__(self, array:np.ndarray, centering:bool=True, caption:str='caption', label:str='tab:my-label', data_align:str="center", label_align:str="left"):
+    __row_colors = list[str|None]
+    __column_colors = list[str|None]
+
+    __scientific_notation: bool
+    __precision: int
+
+    def __init__(self, array:np.ndarray,
+                 centering:bool=True,
+
+                 vline:bool=False,
+                 hline_top:bool=True,
+                 hline_bottom:bool=True,
+                 hline_header:bool=True,
+                 hline_rows:bool=False,
+
+                 bold_column_labels:bool=True,
+                 bold_row_labels:bool=True,
+
+                 scientific_notation:bool=False,
+                 precision:int = 2,
+
+                 caption:str='caption',
+                 label:str='tab:my-label',
+                 data_align:str="center",
+                 label_align:str="left"):
+
         self.__array = array
+        self.__row_colors = [None for _ in range(self.array.shape[0])]
+        self.__column_colors = [None for _ in range(self.array.shape[1])]
         self.__caption = caption
         self.__label = label
         self.__centering = centering
+
+        self.__vline = vline
+        self.__hline_top = hline_top
+        self.__hline_bottom = hline_bottom
+        self.__hline_header = hline_header
+        self.__hline_rows = hline_rows
+
+        self.__bold_column_labels = bold_column_labels
+        self.__bold_row_labels = bold_row_labels
 
         self.__data_align = data_align
         self.__label_align = label_align
@@ -24,6 +69,9 @@ class LatexTable:
 
         self.__row_labels = None
         self.__column_labels = None
+
+        self.__scientific_notation = scientific_notation
+        self.__precision = precision
 
     @property
     def array(self):
@@ -35,9 +83,11 @@ class LatexTable:
 
         if array.shape[0] != self.__array.shape[0]:
             self.row_labels = None
+            self.__row_colors = [None for _ in range(self.array.shape[0])]
 
         if array.shape[1] != self.__array.shape[1]:
             self.column_labels = None
+            self.__column_colors = [None for _ in range(self.array.shape[1])]
 
         self.__array = array
 
@@ -101,6 +151,97 @@ class LatexTable:
         assert len(column_labels) == self.array.shape[1]
         self.__column_labels = column_labels
 
+    @property
+    def vline(self):
+        return self.__vline
+
+    @vline.setter
+    def vline(self, vline:bool):
+        self.__vline = vline
+
+    @property
+    def hline_top(self):
+        return self.__hline_top
+
+    @hline_top.setter
+    def hline_top(self, hline_top:bool):
+        self.__hline_top = hline_top
+
+    @property
+    def hline_bottom(self):
+        return self.__hline_bottom
+
+    @hline_bottom.setter
+    def hline_bottom(self, hline_bottom:bool):
+        self.__hline_bottom = hline_bottom
+
+    @property
+    def hline_header(self):
+        return self.__hline_header
+
+    @hline_header.setter
+    def hline_header(self, hline_header:bool):
+        self.__hline_header = hline_header
+
+    @property
+    def hline_rows(self):
+        return self.__hline_rows
+
+    @hline_rows.setter
+    def hline_rows(self, hline_rows:bool):
+        self.__hline_rows = hline_rows
+
+    @property
+    def bold_column_labels(self):
+        return self.__bold_column_labels
+
+    @bold_column_labels.setter
+    def bold_column_labels(self, bold_column_labels:bool):
+        self.__bold_column_labels = bold_column_labels
+
+    @property
+    def bold_row_labels(self):
+        return self.__bold_row_labels
+
+    @bold_row_labels.setter
+    def bold_row_labels(self, bold_row_labels:bool):
+        self.__bold_row_labels = bold_row_labels
+
+    @property
+    def scientific_notation(self):
+        return self.__scientific_notation
+
+    @scientific_notation.setter
+    def scientific_notation(self, scientific_notation:bool):
+        self.__scientific_notation = scientific_notation
+
+    @property
+    def precision(self):
+        return self.__precision
+
+    @precision.setter
+    def precision(self, precision:int):
+        self.__precision = precision
+
+    def set_column_color(self, idx:int, color:str|None):
+        self.__column_colors[idx] = color
+
+    def set_row_color(self, idx:int, color:str|None):
+        self.__row_colors[idx] = color
+
+    def __get_row_color(self, row:int, column:int) -> str|None:
+        assert 0 <= row < self.array.shape[0], "row index invalid"
+        assert 0 <= column < self.array.shape[1], "column index invalid"
+
+        if self.__column_colors[column] is not None:
+            return self.__column_colors[column]
+
+        elif self.__row_colors[row] is not None:
+            return self.__row_colors[row]
+        else:
+            return None
+
+
     def __get_align_letter(self, align:str):
         if align == "center":
             return "c"
@@ -120,38 +261,79 @@ class LatexTable:
         print("\t\\label{"+self.label+"}")
         print("\t\\begin{tabular}{", end="")
 
+        if self.vline:
+            print("|", end="")
         if self.row_labels is not None:
             print(self.__get_align_letter(self.label_align), end="")
+            if self.vline:
+                print("|", end="")
 
         print(self.array.shape[1]*self.__get_align_letter(self.data_align), end="")
         print("}")
 
     def __print_header(self):
         if self.column_labels is not None:
+            if self.hline_top:
+                print("\t\t\\hline")
+
             print("\t\t", end="")
 
             if self.row_labels is not None:
-                print("&", end="")
+                print(" & ", end="")
 
             for i,label in enumerate(self.column_labels):
+                if self.bold_column_labels:
+                    print(r"\textbf{", end="")
                 print(label, end="")
+                if self.bold_column_labels:
+                    print(r"}", end="")
 
                 if i < len(self.column_labels) - 1:
-                    print("&", end="")
+                    print(" & ", end="")
 
             print(r"\\")
+            if self.hline_header:
+                print("\t\t\\hline")
 
     def __print_table_body(self):
         rowlabels = self.row_labels
         for i in range(self.array.shape[0]):
             print("\t\t", end="")
             if rowlabels is not None:
-                print(rowlabels[i]+"&", end="")
+                if self.bold_row_labels:
+                    print(r"\textbf{", end="")
+
+                print(rowlabels[i], end="")
+
+                if self.bold_row_labels:
+                    print("}", end="")
+
+                print(" & ", end="")
+
             for j, val in enumerate(self.array[i,:]):
-                print(f"{val}", end="")
+                if self.__get_row_color(i, j) is not None:
+                    print(r"\cellcolor{"+self.__get_row_color(i, j)+r"}", end="")
+
+                print(r"\SI{", end="")
+
+                if self.scientific_notation:
+                    print(f"{val:.{self.precision}e}", end="")
+
+                else:
+                    print(f"{val}", end="")
+
+                print(r"}{}", end="")
+
                 if j < (self.array.shape[1] - 1):
-                    print(f"&", end="")
+                    print(f" & ", end="")
+
             print(r"\\")
+
+            if self.hline_rows and i < (self.array.shape[0] - 1):
+                print("\t\t\\hline")
+
+        if self.hline_bottom:
+            print("\t\t\\hline")
 
     def __print_table_end(self):
         print("\t\\end{tabular}")
@@ -170,5 +352,8 @@ if __name__ == "__main__":
     table= LatexTable(a)
     table.row_labels = ["row1", "row2"]
     table.column_labels = ["col1", "col2","col3","col4","col5"]
+    table.set_row_color(-1, "lightgray")
+    table.set_column_color(-1, "lightgray")
+    table.scientific_notation = True
     table.print_table()
 
