@@ -26,6 +26,9 @@ class LatexTable:
 
     __scientific_notation: bool
     __precision: int
+    __round: bool
+
+    __unit: str
 
     def __init__(self, array:np.ndarray,
                  centering:bool=True,
@@ -41,6 +44,9 @@ class LatexTable:
 
                  scientific_notation:bool=False,
                  precision:int = 2,
+                 round:bool = False,
+
+                 unit:str = "",
 
                  caption:str='caption',
                  label:str='tab:my-label',
@@ -72,6 +78,9 @@ class LatexTable:
 
         self.__scientific_notation = scientific_notation
         self.__precision = precision
+        self.__round = round
+
+        self.__unit = unit
 
     @property
     def array(self):
@@ -223,6 +232,22 @@ class LatexTable:
     def precision(self, precision:int):
         self.__precision = precision
 
+    @property
+    def round(self):
+        return self.__round
+
+    @round.setter
+    def round(self, round:bool):
+        self.__round = round
+
+    @property
+    def unit(self):
+        return self.__unit
+
+    @unit.setter
+    def unit(self, unit:str):
+        self.__unit = unit
+
     def set_column_color(self, idx:int, color:str|None):
         self.__column_colors[idx] = color
 
@@ -319,10 +344,12 @@ class LatexTable:
                 if self.scientific_notation:
                     print(f"{val:.{self.precision}e}", end="")
 
+                elif self.round:
+                    print(f"{round(val, self.precision)}")
                 else:
                     print(f"{val}", end="")
 
-                print(r"}{}", end="")
+                print(r"}{"+self.unit+"}", end="")
 
                 if j < (self.array.shape[1] - 1):
                     print(f" & ", end="")
