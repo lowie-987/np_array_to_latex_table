@@ -341,8 +341,10 @@ class LatexTable:
             for j, val in enumerate(self.array[i,:]):
                 if self.__get_cell_color(i, j) is not None:
                     print(r"\cellcolor{"+self.__get_cell_color(i, j)+r"}", end="")
-
-                print(r"\SI{", end="")
+                if self.unit != "":
+                    print(r"\qty{", end="")
+                else:
+                    print(r"\num{", end="")
 
                 if self.scientific_notation:
                     print(f"{val:.{self.precision}e}", end="")
@@ -352,7 +354,10 @@ class LatexTable:
                 else:
                     print(f"{val}", end="")
 
-                print(r"}{"+self.unit+"}", end="")
+                if self.unit != "":
+                    print(r"}{"+self.unit+"}", end="")
+                else:
+                    print(r"}", end="")
 
                 if j < (self.array.shape[1] - 1):
                     print(f" & ", end="")
